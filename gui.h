@@ -21,8 +21,6 @@ public:
 	void updatePreviewImg();
 	// Funkcja która ustawia kontrolki w GUI
 	void setGUI(bool isEditMode);
-	// Aktualizuje stan check-boxów dotycz¹cych kana³ów R, G, B, L, V
-	void updateCheckboxes();
 private:
 	// Sizery
 	wxBoxSizer* mainSizer;
@@ -52,12 +50,14 @@ private:
 	wxButton* btFindNoise;
 	// Suwak do wyboru zaznaczonego obszaru
 	wxScrollBar* sbArea;
+	// Kontrolka do wyboru reprezentacji kolorów
+	wxChoice* chRepresentation;
+	// Lista reprezentacji kolorów
+	wxArrayString chRepArray;
 	// Checkboxy do zaznaczania rodzaju odszumiania
 	wxCheckBox* cbRed;
 	wxCheckBox* cbGreen;
 	wxCheckBox* cbBlue;
-	wxCheckBox* cbLight;
-	wxCheckBox* cbValue;
 	// Suwak do wyboru poziomu rozmycia
 	wxScrollBar* sbBlur;
 	// Obecna wartoœæ poziomu rozmycia
@@ -106,11 +106,10 @@ private:
 	void btReset_Click(wxCommandEvent& e);
 	void btFindNoise_Click(wxCommandEvent& e);
 	void sbArea_Scroll(wxScrollEvent& e);
+	void chRepresentation_Changed(wxCommandEvent& e);
 	void cbRed_Click(wxCommandEvent& e);
 	void cbGreen_Click(wxCommandEvent& e);
 	void cbBlue_Click(wxCommandEvent& e);
-	void cbLight_Click(wxCommandEvent& e);
-	void cbValue_Click(wxCommandEvent& e);
 	void sbBlur_Scroll(wxScrollEvent& e);
 	void btRemNoise_Click(wxCommandEvent& e);
 	void btFinish_Click(wxCommandEvent& e);

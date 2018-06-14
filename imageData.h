@@ -22,7 +22,7 @@ struct RectSelection {
 	float y2;
 };
 
-enum ImageType { RGB, HSL, HSV };
+enum ImageType { RGB, HSL, HSV,LAB };
 
 class ImageData{
 public:
@@ -44,6 +44,8 @@ public:
 	void convertToHSV();
 	// Konwersja do RGB
 	void convertToRGB();
+    // Konwersja do LAB
+    void convertToLAB();
 	// Odchylenie standardowe wybranego kana³u. Wyliczona przy okazji œrednia przekazana jest do zmiennej average
 	float standardDeviation(short channel, double& average);
 	// Gaussian blur - s³u¿y do odszumiania

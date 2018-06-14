@@ -33,16 +33,20 @@ GFKFrame::GFKFrame() : wxFrame(NULL, wxID_ANY, "Redukcja szumów") {
 	previewSizer->Add(leftPreviewPanel, 1, wxALIGN_LEFT | wxEXPAND | wxALL, 5);
 	previewSizer->Add(rightPreviewPanel, 1, wxALIGN_LEFT | wxEXPAND | wxALL, 5);
 
+	chRepArray.Add("RGB");
+	chRepArray.Add("HSL");
+	chRepArray.Add("HSV");
+	chRepArray.Add("LAB");
+
 	btLoad = new wxButton(this, wxID_ANY, _("Wczytaj obraz"), wxPoint(10, 0), wxSize(180, 25), 0, wxDefaultValidator, _("btLoad"));
 	btSave = new wxButton(this, wxID_ANY, _("Zapisz obraz"), wxPoint(10, 0), wxSize(180, 25), 0, wxDefaultValidator, _("btSave"));
 	btReset = new wxButton(this, wxID_ANY, _("Zresetuj zaznaczenie"), wxPoint(10, 0), wxSize(180, 25), 0, wxDefaultValidator, _("btReset"));
 	btFindNoise = new wxButton(this, wxID_ANY, _("Zbadaj szum"), wxPoint(10, 0), wxSize(180, 25), 0, wxDefaultValidator, _("btFindNoise"));
 	sbArea = new wxScrollBar(this, wxID_ANY, wxPoint(10, 10), wxSize(180, 30), wxSB_HORIZONTAL, wxDefaultValidator, _("sbArea"));
-	cbRed = new wxCheckBox(this, wxID_ANY, _("R (RGB)"), wxPoint(10, 10), wxSize(180, 30), 0, wxDefaultValidator, _("cbRed"));
-	cbGreen = new wxCheckBox(this, wxID_ANY, _("G (RGB)"), wxPoint(10, 10), wxSize(180, 30), 0, wxDefaultValidator, _("cbGreen"));
-	cbBlue = new wxCheckBox(this, wxID_ANY, _("B (RGB)"), wxPoint(10, 10), wxSize(180, 30), 0, wxDefaultValidator, _("cbBlue"));
-	cbLight = new wxCheckBox(this, wxID_ANY, _("L (HSL)"), wxPoint(10, 10), wxSize(180, 30), 0, wxDefaultValidator, _("cbLight"));
-	cbValue = new wxCheckBox(this, wxID_ANY, _("V (HSV)"), wxPoint(10, 10), wxSize(180, 30), 0, wxDefaultValidator, _("cbValue"));
+	chRepresentation = new wxChoice(this, wxID_ANY, wxPoint(10, 10), wxSize(120, 30), chRepArray, 0, wxDefaultValidator, _("chRepresentation"));
+	cbRed = new wxCheckBox(this, wxID_ANY, _("R"), wxPoint(10, 10), wxSize(180, 30), 0, wxDefaultValidator, _("cbRed"));
+	cbGreen = new wxCheckBox(this, wxID_ANY, _("G"), wxPoint(10, 10), wxSize(180, 30), 0, wxDefaultValidator, _("cbGreen"));
+	cbBlue = new wxCheckBox(this, wxID_ANY, _("B"), wxPoint(10, 10), wxSize(180, 30), 0, wxDefaultValidator, _("cbBlue"));
 	sbBlur = new wxScrollBar(this, wxID_ANY, wxPoint(10, 10), wxSize(180, 30), wxSB_HORIZONTAL, wxDefaultValidator, _("sbBlur"));
 	btRemNoise = new wxButton(this, wxID_ANY, _("Zastosuj"), wxPoint(10, 0), wxSize(180, 25), 0, wxDefaultValidator, _("btRemNoise"));
 	btFinish = new wxButton(this, wxID_ANY, _("Zakoñcz odszumianie"), wxPoint(10, 0), wxSize(180, 25), 0, wxDefaultValidator, _("btFinish"));
@@ -65,11 +69,10 @@ GFKFrame::GFKFrame() : wxFrame(NULL, wxID_ANY, "Redukcja szumów") {
 	mainSizer2->Add(btFindNoise, 0, wxALIGN_CENTER | wxALL, 5);
 	mainSizer2->Add(sbArea, 0, wxALIGN_CENTER, 5);
 	mainSizer2->Add(textPanel, 1, wxALIGN_CENTER | wxALL, 5);
+	mainSizer2->Add(chRepresentation, 0, wxALIGN_CENTER, 1);
 	mainSizer2->Add(cbRed, 0, wxALIGN_CENTER, 5);
 	mainSizer2->Add(cbGreen, 0, wxALIGN_CENTER, 5);
 	mainSizer2->Add(cbBlue, 0, wxALIGN_CENTER, 5);
-	mainSizer2->Add(cbLight, 0, wxALIGN_CENTER, 5);
-	mainSizer2->Add(cbValue, 0, wxALIGN_CENTER, 5);
 	mainSizer2->Add(sbBlur, 0, wxALIGN_CENTER, 5);
 	mainSizer2->Add(blurPanel, 0, wxALIGN_CENTER | wxALL, 5);
 	mainSizer2->Add(btRemNoise, 0, wxALIGN_CENTER, 5);
@@ -85,11 +88,10 @@ GFKFrame::GFKFrame() : wxFrame(NULL, wxID_ANY, "Redukcja szumów") {
 	btReset->Bind(wxEVT_BUTTON, &GFKFrame::btReset_Click, this);
 	btFindNoise->Bind(wxEVT_BUTTON, &GFKFrame::btFindNoise_Click, this);
 	sbArea->Bind(wxEVT_SCROLL_CHANGED, &GFKFrame::sbArea_Scroll, this);
+	chRepresentation->Bind(wxEVT_CHOICE, &GFKFrame::chRepresentation_Changed, this);
 	cbRed->Bind(wxEVT_CHECKBOX, &GFKFrame::cbRed_Click, this);
 	cbGreen->Bind(wxEVT_CHECKBOX, &GFKFrame::cbGreen_Click, this);
 	cbBlue->Bind(wxEVT_CHECKBOX, &GFKFrame::cbBlue_Click, this);
-	cbLight->Bind(wxEVT_CHECKBOX, &GFKFrame::cbLight_Click, this);
-	cbValue->Bind(wxEVT_CHECKBOX, &GFKFrame::cbValue_Click, this);
 	sbBlur->Bind(wxEVT_SCROLL_CHANGED, &GFKFrame::sbBlur_Scroll, this);
 	btRemNoise->Bind(wxEVT_BUTTON, &GFKFrame::btRemNoise_Click, this);
 	btFinish->Bind(wxEVT_BUTTON, &GFKFrame::btFinish_Click, this);
@@ -108,6 +110,7 @@ GFKFrame::GFKFrame() : wxFrame(NULL, wxID_ANY, "Redukcja szumów") {
 
 	dialLoad = new wxFileDialog(this, _("Podaj scie¿kê"), _(""), _(""), _("*"), wxFD_OPEN);
 	dialSave = new wxFileDialog(this, _("Podaj scie¿kê"), _(""), _(""), _("*"), wxFD_SAVE);
+	chRepresentation->SetSelection(0);
 	isImgLoaded = false;
 	isUpdateGUI = false;
 	areaNumber = -1;
@@ -140,35 +143,34 @@ void GFKFrame::updatePreviewImg() {
 	delete previewImgData;
 	// Skopiuj obraz
 	previewImgData = new ImageData(areaImages[areaNumber]);
-	// Jeœli wybrano kana³ R, zastosuj na nim gaussian blur
+	// Jeœli wybrano kana³ R, H lub L(od LAB), zastosuj na nim gaussian blur
+	int representation = chRepresentation->GetSelection();
 	if (cbRed->GetValue()) {
-		previewImgData->convertToRGB();
-		areaImages[areaNumber]->convertToRGB();
-		previewImgData->gaussianBlur(areaImages[areaNumber], pow(10, blurLevel * 4 - 2), CHANNEL_RED);
+		if (representation == 0) { previewImgData->convertToRGB(); areaImages[areaNumber]->convertToRGB(); }
+		if (representation == 1) { previewImgData->convertToHSL(); areaImages[areaNumber]->convertToHSL(); }
+		if (representation == 2) { previewImgData->convertToHSV(); areaImages[areaNumber]->convertToHSV(); }
+		if (representation == 3) { previewImgData->convertToLAB(); areaImages[areaNumber]->convertToLAB(); }
+		previewImgData->gaussianBlur(areaImages[areaNumber], pow(10, blurLevel * 4 - 2), 0);
 	}
-	// Jeœli wybrano kana³ G, zastosuj na nim gaussian blur
+	// Jeœli wybrano kana³ G lub S lub A, zastosuj na nim gaussian blur
 	if (cbGreen->GetValue()) {
+		if (representation == 0) { previewImgData->convertToRGB(); areaImages[areaNumber]->convertToRGB(); }
+		if (representation == 1) { previewImgData->convertToHSL(); areaImages[areaNumber]->convertToHSL(); }
+		if (representation == 2) { previewImgData->convertToHSV(); areaImages[areaNumber]->convertToHSV(); }
+		if (representation == 3) { previewImgData->convertToLAB(); areaImages[areaNumber]->convertToLAB(); }
 		previewImgData->convertToRGB();
 		areaImages[areaNumber]->convertToRGB();
-		previewImgData->gaussianBlur(areaImages[areaNumber], pow(10, blurLevel * 4 - 2), CHANNEL_GREEN);
+		previewImgData->gaussianBlur(areaImages[areaNumber], pow(10, blurLevel * 4 - 2), 1);
 	}
-	// Jeœli wybrano kana³ B, zastosuj na nim gaussian blur
+	// Jeœli wybrano kana³ B(od RGB), L(od HSL), V lub B(od LAB), zastosuj na nim gaussian blur
 	if (cbBlue->GetValue()) {
+		if (representation == 0) { previewImgData->convertToRGB(); areaImages[areaNumber]->convertToRGB(); }
+		if (representation == 1) { previewImgData->convertToHSL(); areaImages[areaNumber]->convertToHSL(); }
+		if (representation == 2) { previewImgData->convertToHSV(); areaImages[areaNumber]->convertToHSV(); }
+		if (representation == 3) { previewImgData->convertToLAB(); areaImages[areaNumber]->convertToLAB(); }
 		previewImgData->convertToRGB();
 		areaImages[areaNumber]->convertToRGB();
-		previewImgData->gaussianBlur(areaImages[areaNumber], pow(10, blurLevel * 4 - 2), CHANNEL_BLUE);
-	}
-	// Jeœli wybrano kana³ L, zastosuj na nim gaussian blur
-	if (cbLight->GetValue()) {
-		previewImgData->convertToHSL();
-		areaImages[areaNumber]->convertToHSL();
-		previewImgData->gaussianBlur(areaImages[areaNumber], pow(10, blurLevel * 4 - 2), CHANNEL_LIGHT);
-	}
-	// Jeœli wybrano kana³ V, zastosuj na nim gaussian blur
-	if (cbValue->GetValue()) {
-		previewImgData->convertToHSV();
-		areaImages[areaNumber]->convertToHSV();
-		previewImgData->gaussianBlur(areaImages[areaNumber], pow(10, blurLevel * 4 - 2), CHANNEL_VALUE);
+		previewImgData->gaussianBlur(areaImages[areaNumber], pow(10, blurLevel * 4 - 2), 2);
 	}
 	// Upewnij siê, ¿e obraz jest w trybie RGB
 	previewImgData->convertToRGB();
@@ -183,12 +185,11 @@ void GFKFrame::setGUI(bool isEditMode) {
 	// W zale¿noœci od argumentu isEditMode - poka¿ lub ukryj odpowiednie kontrolki
 	previewSizer->Show(isEditMode);
 	blurPanel->Show(isEditMode);
+	chRepresentation->Show(isEditMode);
 	sbArea->Show(isEditMode);
 	cbRed->Show(isEditMode);
 	cbGreen->Show(isEditMode);
 	cbBlue->Show(isEditMode);
-	cbLight->Show(isEditMode);
-	cbValue->Show(isEditMode);
 	sbBlur->Show(isEditMode);
 	btRemNoise->Show(isEditMode);
 	btFinish->Show(isEditMode);
@@ -349,7 +350,6 @@ void GFKFrame::btFindNoise_Click(wxCommandEvent& e) {
 	sbArea->SetScrollbar(0, 0, areaImages.size()-1, 10);
 	setGUI(true);
 	updatePreviewImg();
-	updateCheckboxes();
 }
 
 void GFKFrame::sbArea_Scroll(wxScrollEvent& e) {
@@ -359,53 +359,34 @@ void GFKFrame::sbArea_Scroll(wxScrollEvent& e) {
 	updatePreviewImg();
 }
 
-void GFKFrame::updateCheckboxes() {
-	// Uzyskaj wartoœci checkboxów poszczególnych kana³ów
-	bool R, G, B, L, V;
-	R = cbRed->GetValue();
-	G = cbGreen->GetValue();
-	B = cbBlue->GetValue();
-	L = cbLight->GetValue();
-	V = cbValue->GetValue();
-	// Jeœli ¿aden nie jest zaznaczony, ustaw wszystkie jako aktywne
-	if (!R && !G && !B && !L && !V) {
-		cbRed->Enable(true);
-		cbGreen->Enable(true);
-		cbBlue->Enable(true);
-		cbLight->Enable(true);
-		cbValue->Enable(true);
-		btRemNoise->Enable(false);
+// Jeœli zmieniony zosta³ kana³, uaktualnij podgl¹d
+void GFKFrame::cbRed_Click(wxCommandEvent& e) { updatePreviewImg(); }
+void GFKFrame::cbGreen_Click(wxCommandEvent& e) { updatePreviewImg(); }
+void GFKFrame::cbBlue_Click(wxCommandEvent& e) { updatePreviewImg(); }
+
+void GFKFrame::chRepresentation_Changed(wxCommandEvent& e) {
+	updatePreviewImg();
+	if (chRepresentation->GetSelection() == 0) {
+		cbRed->SetLabelText("R");
+		cbGreen->SetLabelText("G");
+		cbBlue->SetLabelText("B");
 	}
-	// Jeœli zaznaczony jest kana³ z reprezentacji RGB, zablokuj wybór kana³ów pozosta³ych reprezentacji
-	else if (R || G || B) {
-		cbLight->Enable(false);
-		cbValue->Enable(false);
-		btRemNoise->Enable(true);
+	if (chRepresentation->GetSelection() == 1) {
+		cbRed->SetLabelText("H");
+		cbGreen->SetLabelText("S");
+		cbBlue->SetLabelText("L");
 	}
-	// Jeœli zaznaczony jest kana³ z reprezentacji HSL, zablokuj wybór kana³ów pozosta³ych reprezentacji
-	else if (L) {
-		cbRed->Enable(false);
-		cbGreen->Enable(false);
-		cbBlue->Enable(false);
-		cbValue->Enable(false);
-		btRemNoise->Enable(true);
+	if (chRepresentation->GetSelection() == 2) {
+		cbRed->SetLabelText("H");
+		cbGreen->SetLabelText("S");
+		cbBlue->SetLabelText("V");
 	}
-	// Jeœli zaznaczony jest kana³ z reprezentacji HSV, zablokuj wybór kana³ów pozosta³ych reprezentacji
-	else if (V) {
-		cbRed->Enable(false);
-		cbGreen->Enable(false);
-		cbBlue->Enable(false);
-		cbLight->Enable(false);
-		btRemNoise->Enable(true);
+	if (chRepresentation->GetSelection() == 3) {
+		cbRed->SetLabelText("L");
+		cbGreen->SetLabelText("A");
+		cbBlue->SetLabelText("B");
 	}
 }
-
-// Jeœli klikniêty zosta³ dowolny checkbox dotycz¹cy kana³ów, uaktualnij GUI
-void GFKFrame::cbRed_Click(wxCommandEvent& e) { updateCheckboxes();  updatePreviewImg(); }
-void GFKFrame::cbGreen_Click(wxCommandEvent& e) { updateCheckboxes(); updatePreviewImg(); }
-void GFKFrame::cbBlue_Click(wxCommandEvent& e) { updateCheckboxes(); updatePreviewImg(); }
-void GFKFrame::cbLight_Click(wxCommandEvent& e) { updateCheckboxes(); updatePreviewImg(); }
-void GFKFrame::cbValue_Click(wxCommandEvent& e) { updateCheckboxes(); updatePreviewImg(); }
 
 void GFKFrame::btRemNoise_Click(wxCommandEvent& e) {
 	// Przeka¿ obraz z obiektu ImageData do wxImage

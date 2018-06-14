@@ -111,7 +111,7 @@ float ImageData::negMod(float value, float maxVal) {
 }
 
 void ImageData::convertToHSL() {
-	if (imageType == HSV) convertToRGB();
+	if (imageType == HSV || imageType == LAB) convertToRGB();
 	if (imageType == RGB) {
 		float R, G, B, cMin, cMax, delta, H, S, L;
 		for (unsigned int i = 0; i < width; i++) {
@@ -180,7 +180,52 @@ void ImageData::convertToHSL() {
 	}*/
 }
 
+
+
+
+void ImageData::convertToLAB()
+{
+    if (imageType == HSL || imageType == HSV)
+        convertToRGB();
+    if (imageType == RGB)
+    {
+        float R, G, B, X, Y, Z, fx, fy, fz, L, a, b;
+        float Xr, Yr, Zr, xr, yr, zr;
+        float e = 0.008856;
+        float k = 903.3;
+        auto f = [e, k](float x) {if (x > e) return pow(x, 1.0 / 3.0); else return (k*x + 16.0) / 116.0; };
+        Xr = 0.5767309 + 0.185554 + 0.1881852;
+        Yr = 0.2973769 + 0.6273491 + 0.0752741;
+        Zr = 0.0270343 + 0.0706872 + 0.9911085;
+        for (unsigned int i = 0; i < width; i++) {
+            for (unsigned int j = 0; j < height; j++) {
+                R = pixelData[i][j][0];
+                G = pixelData[i][j][1];
+                B = pixelData[i][j][2];
+
+                X = 0.5767309*R + 0.185554*G + 0.1881852*B;
+                Y = 0.2973769*R + 0.6273491*G + 0.0752741*B;
+                Z = 0.0270343*R + 0.0706872*G + 0.9911085*B;
+                xr = X / Xr;
+                yr = Y / Yr;
+                zr = Z / Zr;
+                fx = f(xr);
+                fy = f(yr);
+                fz = f(zr);
+                L = 116.0*fy - 16.0;
+                a = 500.0*(fx - fy);
+                b = 200.0*(fy - fz);
+                pixelData[i][j][0] = L;
+                pixelData[i][j][1] = a;
+                pixelData[i][j][2] = b;
+            }
+        }
+    }
+    imageType = LAB;
+}
+
 void ImageData::convertToHSV() {
+	if (imageType == LAB) convertToRGB();
 	if (imageType == RGB) convertToHSL();
 	if (imageType == HSL) {
 		float S, L, newS, newV;
@@ -249,6 +294,51 @@ void ImageData::convertToRGB() {
 		}
 		imageType = RGB;
 	}
+    if (imageType == LAB)
+    {
+		float R, G, B, X, Y, Z, fx, fy, fz, L, a, b;
+		float Xr, Yr, Zr, xr, yr, zr;
+		float e = 0.008856;
+		float k = 903.3;
+		auto f1 = [e, k,L](float x) {if (pow(x, 3) > e) return pow(x, 3); else return (116 * x - 16) / k; };
+        auto f2 = [e, k,L](float x) {if (L > k * e) return pow((L + 16) / 116, 3); else return L / k; };
+		//Wykomentowany prawdopodobnie b³êdny kawa³ek nie mojego autorstwa- Filip
+        //mo¿e siê oka¿e jednak poprawny, zobaczymy.
+        /*Xr = 2.0413690 - 0.5649464 - 0.3446944;
+		Yr = -0.9692660 + 1.8760108 + 0.0415560;
+		Zr = 0.0134474 - 0.1183897 + 1.0154096;*/
+        Xr = 0.5767309 + 0.185554 + 0.1881852;
+        Yr = 0.2973769 + 0.6273491 + 0.0752741;
+        Zr = 0.0270343 + 0.0706872 + 0.9911085;
+		for (unsigned int i = 0; i < width; i++) {
+			for (unsigned int j = 0; j < height; j++) {
+				L = pixelData[i][j][0];
+				a = pixelData[i][j][1];
+				b = pixelData[i][j][2];
+
+				fy = (L + 16) / 116;
+				fz = fy - b / 200;
+				fx = a / 500 + fy;
+
+				zr = f1(fz);
+				yr = f2(fz);
+				xr = f1(fz);
+
+				X = xr * Xr;
+				Y = yr * Yr;
+				Z = zr * Zr;
+
+				R = 2.0413690 * X - 0.5649464 * Y - 0.3446944 * Z;
+				G = -0.9692660 * X + 1.8760108 * Y + 0.0415560 * Z;
+				B = 0.0134474 *	X - 0.1183897 * Y + 1.0154096 * Z;
+
+				pixelData[i][j][0] = R;
+				pixelData[i][j][1] = G;
+				pixelData[i][j][2] = B;
+			}
+		}
+        imageType = RGB;
+    }
 }
 
 float ImageData::standardDeviation(short channel, double& average) {
