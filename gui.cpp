@@ -158,8 +158,6 @@ void GFKFrame::updatePreviewImg() {
 		if (representation == 1) { previewImgData->convertToHSL(); areaImages[areaNumber]->convertToHSL(); }
 		if (representation == 2) { previewImgData->convertToHSV(); areaImages[areaNumber]->convertToHSV(); }
 		if (representation == 3) { previewImgData->convertToLAB(); areaImages[areaNumber]->convertToLAB(); }
-		previewImgData->convertToRGB();
-		areaImages[areaNumber]->convertToRGB();
 		previewImgData->gaussianBlur(areaImages[areaNumber], pow(10, blurLevel * 4 - 2), 1);
 	}
 	// Jeœli wybrano kana³ B(od RGB), L(od HSL), V lub B(od LAB), zastosuj na nim gaussian blur
@@ -168,8 +166,6 @@ void GFKFrame::updatePreviewImg() {
 		if (representation == 1) { previewImgData->convertToHSL(); areaImages[areaNumber]->convertToHSL(); }
 		if (representation == 2) { previewImgData->convertToHSV(); areaImages[areaNumber]->convertToHSV(); }
 		if (representation == 3) { previewImgData->convertToLAB(); areaImages[areaNumber]->convertToLAB(); }
-		previewImgData->convertToRGB();
-		areaImages[areaNumber]->convertToRGB();
 		previewImgData->gaussianBlur(areaImages[areaNumber], pow(10, blurLevel * 4 - 2), 2);
 	}
 	// Upewnij siê, ¿e obraz jest w trybie RGB
